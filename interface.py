@@ -5,7 +5,8 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication, QHBoxLayout,
 from PyQt5.QtGui import QImage, QPainter, QPen, QPixmap
 from PyQt5.QtCore import Qt, QPoint, QSize
 import sys
- 
+import numpy as np
+
 # window class
 class DrawingWindow(QMainWindow):
     def __init__(self):
@@ -98,14 +99,14 @@ class DrawingWindow(QMainWindow):
  
     # method for saving canvas
     def save(self):
-        # filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
-        #                   "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
- 
-        # if filePath == "":
-        #     return
+        channels_count = 4
+        b = self.image.bits()
+        # sip.voidptr must know size to support python buffer interface
+        b.setsize(self.height() * self.width() * channels_count)
+        arr = np.frombuffer(b, np.uint8).reshape((self.height(), self.width(), channels_count))[:, :, 0]
 
-        filePath = './test.png'
-        self.image.save(filePath)
+
+        self.clear()
  
     # method for clearing every thing on canvas
     def clear(self):
