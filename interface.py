@@ -1,9 +1,9 @@
 # Modified from: https://www.geeksforgeeks.org/pyqt5-create-paint-application/
 
 # importing libraries
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication
-from PyQt5.QtGui import QImage, QPainter, QPen
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication, QHBoxLayout, QVBoxLayout, QPushButton, QWidget, QMenuBar, QAction, QToolBar
+from PyQt5.QtGui import QImage, QPainter, QPen, QPixmap
+from PyQt5.QtCore import Qt, QPoint, QSize
 import sys
  
 # window class
@@ -13,14 +13,15 @@ class DrawingWindow(QMainWindow):
  
         # setting title
         self.setWindowTitle("Paint with PyQt5")
- 
+        widget = QWidget()
+
         # setting geometry to main window
         self.setGeometry(100, 100, 800, 200)
- 
+
         # creating image object
         self.image = QImage(self.size(), QImage.Format_RGB32)
  
-        # making image color to white
+        # # making image color to white
         self.image.fill(Qt.white)
  
         # variables
@@ -33,7 +34,20 @@ class DrawingWindow(QMainWindow):
  
         # QPoint object to tract the point
         self.lastPoint = QPoint()
- 
+
+        # menu bar
+        toolbar = QToolBar()
+        clear_action = QAction("Clear", self)
+        clear_action.triggered.connect(self.clear)
+        toolbar.addAction(clear_action)
+
+        save_action = QAction("Save", self)
+        save_action.triggered.connect(self.save)
+        toolbar.addAction(save_action)
+        toolbar.setMovable(False)
+
+        # menu_bar.addAction(self.save)
+        self.addToolBar(toolbar)
  
     # method for checking mouse cicks
     def mousePressEvent(self, event):
@@ -73,7 +87,7 @@ class DrawingWindow(QMainWindow):
         if event.button() == Qt.LeftButton:
             # make drawing flag false
             self.drawing = False
- 
+
     # paint event
     def paintEvent(self, event):
         # create a canvas
@@ -84,11 +98,13 @@ class DrawingWindow(QMainWindow):
  
     # method for saving canvas
     def save(self):
-        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
-                          "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
+        # filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
+        #                   "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
  
-        if filePath == "":
-            return
+        # if filePath == "":
+        #     return
+
+        filePath = './test.png'
         self.image.save(filePath)
  
     # method for clearing every thing on canvas
