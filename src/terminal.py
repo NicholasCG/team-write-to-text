@@ -131,7 +131,6 @@ def infer(model: Model, fn_img: Path) -> None:
 
     preprocessor = Preprocessor(get_img_size(), dynamic_width=True, padding=16)
     img = preprocessor.process_img(img)
-
     batch = Batch([img], None, 1)
     recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
