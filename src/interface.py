@@ -7,10 +7,12 @@ from PyQt5.QtCore import Qt, QPoint, QSize
 import sys
 import numpy as np
 
-# from dataloader_iam import DataLoaderIAM, Batch
-# from model import Model, DecoderType
-# from preprocessor import Preprocessor
+from dataloader_iam import DataLoaderIAM, Batch
+from model import Model, DecoderType
+from preprocessor import Preprocessor
 from typing import Tuple, List
+
+import cv2
 
 # window class
 class DrawingWindow(QMainWindow):
@@ -54,6 +56,16 @@ class DrawingWindow(QMainWindow):
 
         # menu_bar.addAction(self.save)
         self.addToolBar(toolbar)
+
+        decoder_mapping = {'bestpath': DecoderType.BestPath,
+                    'beamsearch': DecoderType.BeamSearch,
+                    'wordbeamsearch': DecoderType.WordBeamSearch}
+
+        with open('../model/charList.txt') as f:
+            char_list = list(f.read())
+        decoder_type = decoder_mapping['beamsearch']
+        
+        self.model = Model(char_list, decoder_type, must_restore=True)
  
     # method for checking mouse cicks
     def mousePressEvent(self, event):
@@ -104,20 +116,25 @@ class DrawingWindow(QMainWindow):
  
     # method for saving canvas
     def save(self):
+
         channels_count = 4
         b = self.image.bits()
         # sip.voidptr must know size to support python buffer interface
         b.setsize(self.height() * self.width() * channels_count)
         img = np.frombuffer(b, np.uint8).reshape((self.height(), self.width(), channels_count))[:, :, 0]
 
-        # model = Model(char_list_from_file(), decoder_type, must_restore=True, dump=args.dump)
-        
-        # preprocessor = Preprocessor(self.get_img_size(), dynamic_width=True, padding=16)
-        # img = preprocessor.process_img(img)
-        # batch = Batch([img], None, 1)
-        # recognized, probability = model.infer_batch(batch, True)
-        # print(f'Recognized: "{recognized[0]}"')
-        # print(f'Probability: {probability[0]}')
+        # cv2.imshow('original', img)
+        preprocessor = Preprocessor((128, 32), dynamic_width=True, padding=16)
+        img = preprocessor.process_img(img)
+        batch = Batch([img], None, 1)
+
+        # cv2.imshow('processed', img)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+        recognized, probability = self.model.infer_batch(batch, True)
+        print(f'Recognized: "{recognized[0]}"')
+        print(f'Probability: {probability[0]}')
 
         self.clear()
  
@@ -128,15 +145,6 @@ class DrawingWindow(QMainWindow):
         # update
         self.update()
 
-    def get_img_size(self, line_mode: bool = False) -> Tuple[int, int]:
-        """Height is fixed for NN, width is set according to training mode (single words or text lines)."""
-        if line_mode:
-            return 256, self.get_img_height()
-        return 128, self.get_img_height()
-
-    def get_img_height(self) -> int:
-        """Fixed height for NN."""
-        return 32
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
