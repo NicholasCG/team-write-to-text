@@ -44,6 +44,16 @@ min_x -= padding_px
 max_y += padding_px
 min_y -= padding_px
 
+height, width = img.shape[0], img.shape[1]
+print(str(width) + ' x ' + str(height))
+
+min_y = max(0, min_y)
+min_x = max(0, min_x)
+max_y = min(height, max_y)
+max_x = min(width, max_x)
+
+print(max_x, max_y, min_x, min_y)
+
 cv2.rectangle(img, (max_x, max_y), (min_x, min_y), rectangle_color_rgb, thickness)
 cropped_img = img[min_y:max_y, min_x:max_x]
 cv2.imshow('image', cropped_img)
